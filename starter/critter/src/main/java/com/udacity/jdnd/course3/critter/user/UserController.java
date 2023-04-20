@@ -4,11 +4,11 @@ import com.udacity.jdnd.course3.critter.pet.Pet;
 import com.udacity.jdnd.course3.critter.service.CustomerService;
 import com.udacity.jdnd.course3.critter.service.EmployeeService;
 import com.udacity.jdnd.course3.critter.service.PetService;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.DayOfWeek;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -30,37 +30,64 @@ public class UserController {
     PetService petService;
     @PostMapping("/customer")
     public CustomerDTO saveCustomer(@RequestBody CustomerDTO customerDTO){
-        ModelMapper modelMapper = new ModelMapper();
-        Customer customer = modelMapper.map(customerDTO, Customer.class);
+        Customer customer = new Customer();
+        customer.setId(customerDTO.getId());
+        customer.setName(customer.getName());
+        customer.setPhoneNumber(customer.getPhoneNumber());
+        customer.setNotes(customer.getNotes());
+        customer.setPetIds(customerDTO.getPetIds());
         customer = customerService.save(customer);
-        customerDTO = modelMapper.map(customer, CustomerDTO.class);
+        customerDTO.setId(customer.getId());
         return customerDTO;
     }
     @GetMapping("/customer")
     public List<CustomerDTO> getAllCustomers(){
-        ModelMapper modelMapper = new ModelMapper();
-        List<CustomerDTO> customerDTOS = customerService.getAll().stream().map(e -> modelMapper.map(e, CustomerDTO.class)).collect(Collectors.toList());
+        List<Customer> customers = customerService.getAll();
+        List<CustomerDTO> customerDTOS = new ArrayList<CustomerDTO>();
+        if(customers.size() > 0){
+            for(Customer c : customers){
+                CustomerDTO customerDTO = new CustomerDTO();
+                customerDTO.setId(c.getId());
+                customerDTO.setName(c.getName());
+                customerDTO.setNotes(c.getNotes());
+                customerDTO.setPetIds(c.getPetIds());
+                customerDTO.setPhoneNumber(c.getPhoneNumber());
+                customerDTOS.add(customerDTO);
+            }
+        }
         return  customerDTOS;
     }
     @GetMapping("/customer/pet/{petId}")
     public CustomerDTO getOwnerByPet(@PathVariable long petId){
         Pet pet = petService.findById(petId);
-        ModelMapper modelMapper = new ModelMapper();
-        CustomerDTO customerDTO = modelMapper.map(customerService.findById(pet.getOwnerId()), CustomerDTO.class);
+        Customer c = customerService.findById(pet.getOwnerId());
+        CustomerDTO customerDTO = new CustomerDTO();
+        customerDTO.setId(c.getId());
+        customerDTO.setName(c.getName());
+        customerDTO.setNotes(c.getNotes());
+        customerDTO.setPetIds(c.getPetIds());
+        customerDTO.setPhoneNumber(c.getPhoneNumber());
         return  customerDTO;
     }
     @PostMapping("/employee")
     public EmployeeDTO saveEmployee(@RequestBody EmployeeDTO employeeDTO) {
-        ModelMapper modelMapper = new ModelMapper();
-        Employee employee = modelMapper.map(employeeDTO, Employee.class);
+        Employee employee = new Employee();
+        employee.setId(employeeDTO.getId());
+        employee.setName(employeeDTO.getName());
+        employee.setSkills(employeeDTO.getSkills());
+        employee.setDaysAvailable(employeeDTO.getDaysAvailable());
         employee = employeeService.save(employee);
-        employeeDTO = modelMapper.map(employee, EmployeeDTO.class);
+        employeeDTO.setId(employee.getId());
         return employeeDTO;
     }
     @PostMapping("/employee/{employeeId}")
     public EmployeeDTO getEmployee(@PathVariable long employeeId) {
-        ModelMapper modelMapper = new ModelMapper();
-        EmployeeDTO employeeDTO = modelMapper.map(employeeService.findById(employeeId), EmployeeDTO.class);
+        Employee employee = employeeService.findById(employeeId);
+        EmployeeDTO employeeDTO = new EmployeeDTO();
+        employeeDTO.setId(employee.getId());
+        employeeDTO.setName(employee.getName());
+        employeeDTO.setSkills(employee.getSkills());
+        employeeDTO.setDaysAvailable(employee.getDaysAvailable());
         return  employeeDTO;
     }
     @PutMapping("/employee/{employeeId}")
@@ -71,10 +98,19 @@ public class UserController {
     }
     @GetMapping("/employee/availability")
     public List<EmployeeDTO> findEmployeesForService(@RequestBody EmployeeRequestDTO employeeDTO) {
-        ModelMapper modelMapper = new ModelMapper();
         List<Employee> employees = employeeService.getAll().stream().filter(e -> e.getDaysAvailable().contains(employeeDTO.getDate().getDayOfWeek())
         && e.getSkills().stream().anyMatch(n -> employeeDTO.getSkills().contains(n))).collect(Collectors.toList());
-        List<EmployeeDTO> employeeDTOS = employees.stream().map(e -> modelMapper.map(e, EmployeeDTO.class)).collect(Collectors.toList());
+        List<EmployeeDTO> employeeDTOS = new ArrayList<EmployeeDTO>();
+        if(employees.size() > 0){
+            for(Employee employee : employees){
+                EmployeeDTO empDTO = new EmployeeDTO();
+                empDTO.setId(employee.getId());
+                empDTO.setName(employee.getName());
+                empDTO.setSkills(employee.getSkills());
+                empDTO.setDaysAvailable(employee.getDaysAvailable());
+                employeeDTOS.add(empDTO);
+            }
+        }
         return  employeeDTOS;
     }
 }
