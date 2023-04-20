@@ -93,8 +93,10 @@ public class UserController {
     @PutMapping("/employee/{employeeId}")
     public void setAvailability(@RequestBody Set<DayOfWeek> daysAvailable, @PathVariable long employeeId) {
         Employee employee = employeeService.findById(employeeId);
-        employee.setDaysAvailable(daysAvailable);
-        employeeService.save(employee);
+       if(employee != null){
+           employee.setDaysAvailable(daysAvailable);
+           employeeService.save(employee);
+       }
     }
     @GetMapping("/employee/availability")
     public List<EmployeeDTO> findEmployeesForService(@RequestBody EmployeeRequestDTO employeeDTO) {
